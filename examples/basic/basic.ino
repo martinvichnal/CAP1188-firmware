@@ -7,58 +7,110 @@
  * 
  * @copyright Copyright (c) 2024
  * 
+ * INFO:
+ *  - Avarage low pulse interrupt time: 1.29 ms
  */
 
 #include <Wire.h>
 #include <SPI.h>
 #include <CAP1188.h>
+#include <AntiDelay.h>
 
+void capInit();
+void capInterruptHandler();
+
+AntiDelay anitDelay = AntiDelay(1);
 CAP1188 cap = CAP1188();
+
+uint8_t globalSensorState = 0;
+volatile bool interruptFlag = false;
+
+#define BUTTON_Mode 1
+#define BUTTON_Minus 0
+#define BUTTON_Plus 2
+
+struct Button
+{
+    uint8_t pin;    // The pin number
+    char name[100]; // The name of the button
+    bool state;     // The state of the button
+};
+
+Button buttons[] = {
+    {0, "Minus", false},
+    {1, "Mode", false},
+    {2, "Plus", false}};
 
 void setup()
 {
     Serial.begin(115200);
+
     Serial.println("CAP1188 test!");
 
-    // Initialize the sensor, if using i2c you can pass in the i2c address
-    // if (!cap.begin(0x28)) {
-    if (!cap.begin())
+    if (!cap.begin(0x28))
     {
-        Serial.println("CAP1188 not found");
-        while (1)
-            ;
+        {
+            Serial.println("CAP1188 not found");
+            while (1)
+                ;
+        }
+        Serial.println("CAP1188 found!");
+
+        capInit();
+
+        pinMode(14, INPUT);
+        attachInterrupt(digitalPinToInterrupt(14), capInterruptHandler, FALLING);
     }
-    Serial.println("CAP1188 found!");
-
-    uint8_t sens = cap.readRegister(CAP1188_REG_SENSITIVITY_CONTROL);
-    Serial.println("sens: ");
-    Serial.println(sens);
-
-    sens = cap.setSensitivity(CAP1188_SENS_VAL_64x);
-    Serial.println("sens: ");
-    Serial.println(sens);
 }
 
 void loop()
 {
-    uint8_t touched = cap.touched();
-
-    if (touched == 0)
+    if (interruptFlag)
     {
-        // No touch detected
-        return;
-    }
+        bool currentInterruptFlag = interruptFlag;
+        interruptFlag = false;
 
-    for (uint8_t i = 0; i < 8; i++)
-    {
-        if (touched & (1 << i))
+        if (currentInterruptFlag)
         {
-            Serial.print("C");
-            Serial.print(i + 1);
-            Serial.print("\t");
+            globalSensorState = cap.touched();
+            uint8_t sensorState = globalSensorState;
+            for (uint8_t i = 0; i < 3; i++)
+            {
+                bool newState = sensorState & (1 << buttons[i].pin);
+                if (newState != buttons[i].state)
+                {
+                    buttons[i].state = newState;
+                }
+            }
         }
     }
-    // Serial.println(touched, BIN);
-    Serial.println();
-    delay(50);
+
+    if (anitDelay)
+    {
+        Serial.print("The global sensor state (in hex) is: \t");
+        Serial.println(globalSensorState, HEX);
+    }
+}
+
+void capInit()
+{
+    // Setting the sensitivity of the sensor
+    uint8_t sens = cap.setSensitivity(CAP1188_SENS_VAL_128x);
+    Serial.println("sens: ");
+    Serial.println(sens, HEX);
+    // Disable unwanted inputs
+    cap.writeRegister(CAP1188_REG_SENSOR_INPUT_ENABLE, 0x07);
+    // Enable first 3 touch pad interrupts
+    cap.writeRegister(CAP1188_REG_INTERRUPT_ENABLE, 0x07);
+    // Disable repeate rate for interrupt generation (interrupt only generated when the button state changes)
+    cap.writeRegister(CAP1188_REG_REPEAT_RATE_ENABLE, 0x00);
+    // Set stand by channel for 3 touch pads
+    cap.writeRegister(CAP1188_REG_STANDBY_CHANNEL, 0x07);
+    // Flipping the interrupt pin just in case
+    cap.writeRegister(CAP1188_REG_MAIN_CONTROL, cap.readRegister(CAP1188_REG_MAIN_CONTROL) & ~CAP1188_REG_MAIN_INT);
+}
+
+void capInterruptHandler()
+{
+    interruptFlag = true;
 }
