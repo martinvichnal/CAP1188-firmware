@@ -1,0 +1,12 @@
+{
+    "name": "CAP1188-firmware",
+    "version": "1.0.0",
+    "description": "CAP1188 Capacitive Touch Sensor Firmware using I2C communication method.",
+    "dependencies": [
+        {
+            "owner": "adafruit",
+            "name": "Adafruit_BusIO",
+            "version": "https://github.com/adafruit/Adafruit_BusIO/releases/tag/1.15.0"
+        }
+    ]
+}
