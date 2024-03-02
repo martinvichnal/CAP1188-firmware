@@ -1,10 +1,13 @@
-/*****************************************************
- *  Microchip CAP1188 Library
- *  File:   CAP1188.h
- *  Date:   2016_05_05
- *  Author: Stephen Minakian
- *  Version:0.0.1
- *****************************************************/
+/**
+ * @file CAP1188.h
+ * @author Martin Vichnal
+ * @brief CAP1188 Capacitive Touch Sensor Firmware using I2C communication method.
+ * @version v1.0.2
+ * @date 2024-03-02
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 
 #include <Arduino.h>
 #include <Adafruit_I2CDevice.h>

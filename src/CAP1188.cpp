@@ -1,31 +1,12 @@
-/*!
- *  @file Adafruit_CAP1188.cpp
- *
- *  @mainpage Adafruit CAP1188 I2C/SPI 8-chan Capacitive Sensor
- *
- *  @section intro_sec Introduction
- *
- * 	This is a library for the Adafruit CAP1188 I2C/SPI 8-chan Capacitive
- * Sensor http://www.adafruit.com/products/1602
- *
- *  These sensors use I2C/SPI to communicate, 2+ pins are required to
- *  interface
- *
- * 	Adafruit invests time and resources providing this open source code,
- *  please support Adafruit and open-source hardware by purchasing products from
- * 	Adafruit!
- *
- *  @section author Author
- *
- *  Limor Fried/Ladyada (Adafruit Industries).
- *
- * 	@section license License
- *
- * 	BSD (see license.txt)
- *
- * 	@section  HISTORY
- *
- *     v1.0 - First release
+/**
+ * @file CAP1188.cpp
+ * @author Martin Vichnal
+ * @brief CAP1188 Capacitive Touch Sensor Firmware using I2C communication method.
+ * @version v1.0.2
+ * @date 2024-03-02
+ * 
+ * @copyright Copyright (c) 2024
+ * 
  */
 
 #include "CAP1188.h"
@@ -141,7 +122,7 @@ uint8_t CAP1188::readRegister(uint8_t reg)
  * @param value - Specific bit to set in the register
  * @return u_int8_t - New register bits
  */
-u_int8_t CAP1188::setRegister(uint8_t reg, uint8_t mask, uint8_t value)
+uint8_t CAP1188::setRegister(uint8_t reg, uint8_t mask, uint8_t value)
 {
     uint8_t res = readRegister(reg);
     res &= mask;
