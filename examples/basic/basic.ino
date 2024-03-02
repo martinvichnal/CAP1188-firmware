@@ -1,18 +1,13 @@
-/***************************************************
-  This is a library for the CAP1188 I2C/SPI 8-chan Capacitive Sensor
-
-  Designed specifically to work with the CAP1188 sensor from Adafruit
-  ----> https://www.adafruit.com/products/1602
-
-  These sensors use I2C/SPI to communicate, 2+ pins are required to
-  interface
-  Adafruit invests time and resources providing this open source code,
-  please support Adafruit and open-source hardware by purchasing
-  products from Adafruit!
-
-  Written by Limor Fried/Ladyada for Adafruit Industries.
-  BSD license, all text above must be included in any redistribution
- ****************************************************/
+/**
+ * @file basic.ino
+ * @author Martin Vichnal
+ * @brief CAP1188 Capacitive Touch Sensor Firmware using I2C communication method.
+ * @version v1.0.2
+ * @date 2024-03-02
+ * 
+ * @copyright Copyright (c) 2024
+ * 
+ */
 
 #include <Wire.h>
 #include <SPI.h>
