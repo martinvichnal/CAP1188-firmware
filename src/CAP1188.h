@@ -2,15 +2,15 @@
  * @file CAP1188.h
  * @author Martin Vichnal
  * @brief CAP1188 Capacitive Touch Sensor Firmware using I2C communication method.
- * @version v1.0.2
- * @date 2024-03-02
- * 
+ * @version v1.1.0
+ * @date 2024-04-02
+ *
  * @copyright Copyright (c) 2024
- * 
+ *
  */
 
-#include <Arduino.h>
-#include <Adafruit_I2CDevice.h>
+#include "Arduino.h"
+#include <Wire.h>
 
 #ifndef _CAP1188_H
 #define _CAP1188_H
@@ -104,52 +104,28 @@
 #define CAP1188_REG_MANUFACTURER_ID 0xFE
 #define CAP1188_REG_REVISION 0xFF
 
-
-#define CAP1188_SENS_VAL_128x     0x00 // Most sensitive  0bx000.xxxx
-#define CAP1188_SENS_VAL_64x      0x10 // Less sensitive  0bx001.xxxx
-#define CAP1188_SENS_VAL_DEF_32x  0x20 // Default         0bx010.xxxx
-
+#define CAP1188_SENS_VAL_128x 0x00	  // Most sensitive  0bx000.xxxx
+#define CAP1188_SENS_VAL_64x 0x10	  // Less sensitive  0bx001.xxxx
+#define CAP1188_SENS_VAL_DEF_32x 0x20 // Default         0bx010.xxxx
 
 class CAP1188
 {
 public:
-  CAP1188(int8_t resetpin = -1);
+	CAP1188(int8_t resetpin = -1);
 
-  boolean begin(uint8_t i2caddr = CAP1188_DEFAULT_ADDRESS, TwoWire *theWire = &Wire);
+	bool begin();
+	bool resetCAP1188();
+	bool checkIntegrity();
 
-  uint8_t readRegister(uint8_t reg);
-  u_int8_t setRegister(uint8_t reg, uint8_t mask, uint8_t value);
-  void writeRegister(uint8_t reg, uint8_t value);
+	uint8_t readRegister(uint8_t reg);
+	u_int8_t setRegister(uint8_t reg, uint8_t mask, uint8_t value);
+	void writeRegister(uint8_t reg, uint8_t value);
 
-  uint8_t setSensitivity(uint8_t value);
-  uint8_t touched();
-  void LEDpolarity(uint8_t x);
+	uint8_t setSensitivity(uint8_t value);
+	uint8_t getTouch();
 
 private:
-  Adafruit_I2CDevice *i2c_dev = NULL; ///< Pointer to I2C bus interface
-  int8_t _resetpin;
+	int8_t _resetpin;
 };
-
-// class CAP1188 {
-//   private:
-//     uint8_t address = CAP1188_DEFAULT_ADDRESS;
-
-//     uint8_t getBuildRevision(void);
-//     uint8_t getProductID(void);
-//     uint8_t getMFGID(void);
-//     uint8_t getRevision(void);
-//     uint8_t getVendorID(void);
-
-//   public:
-//     CAP1188();
-//     bool begin(void);
-
-//     uint32_t getDeviceInfo(void);
-//     uint8_t getAddress(void);
-//     void setAddress(uint8_t newAddress);
-
-//     uint8_t readRegister(uint8_t reg_address);
-//     void writeRegister(uint8_t reg_address, uint8_t data);
-// };
 
 #endif
