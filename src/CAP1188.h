@@ -2,8 +2,8 @@
  * @file CAP1188.h
  * @author Martin Vichnal
  * @brief CAP1188 Capacitive Touch Sensor Firmware using I2C communication method.
- * @version v1.1.0
- * @date 2024-04-02
+ * @version v1.1.1
+ * @date 2024-05-22
  *
  * @copyright Copyright (c) 2024
  *
@@ -114,12 +114,13 @@ public:
 	CAP1188(int8_t resetpin = -1);
 
 	bool begin();
-	bool resetCAP1188();
+	bool reset();
 	bool checkIntegrity();
 
 	uint8_t readRegister(uint8_t reg);
-	u_int8_t setRegister(uint8_t reg, uint8_t mask, uint8_t value);
+	uint8_t setRegister(uint8_t reg, uint8_t mask, uint8_t value);
 	void writeRegister(uint8_t reg, uint8_t value);
+	void setInt(uint8_t value = 0);
 
 	uint8_t setSensitivity(uint8_t value);
 	uint8_t getTouch();

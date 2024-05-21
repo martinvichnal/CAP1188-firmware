@@ -2,8 +2,8 @@
  * @file CAP1188.cpp
  * @author Martin Vichnal
  * @brief CAP1188 Capacitive Touch Sensor Firmware using I2C communication method.
- * @version v1.1.0
- * @date 2024-03-02
+ * @version v1.1.1
+ * @date 2024-05-22
  *
  * @copyright Copyright (c) 2024
  *
@@ -29,14 +29,7 @@ bool CAP1188::begin()
 {
     bool res = false;
 
-    res = resetCAP1188();
-
-    // allow multiple touches
-    writeRegister(CAP1188_REG_MULTIPLE_TOUCH_CONFIG, 0);
-    // Have LEDs follow touches
-    writeRegister(CAP1188_REG_SENSOR_INPUT_LED_LINKING, 0x00);
-    // speed up a bit
-    writeRegister(CAP1188_REG_STANDBY_CONFIGURATION, 0x30);
+    res = reset();
 
     return res;
 }
@@ -125,6 +118,17 @@ void CAP1188::writeRegister(uint8_t reg, uint8_t value)
 }
 
 /**
+ * @brief Resets the interrupt bit
+ *
+ *
+ * @param 0 on default (value The interrupt value to be set.)
+ */
+void CAP1188::setInt(uint8_t value)
+{
+    writeRegister(CAP1188_REG_MAIN_CONTROL, value);
+}
+
+/**
  * @brief Check integrity of the device with manifacturer and product predefined values
  *
  * @return bool - True if the device is detected and the integrity is checked, otherwise false.
@@ -133,10 +137,10 @@ bool CAP1188::checkIntegrity()
 {
     bool res = false;
 
-    if ((readRegister(CAP1188_REG_PRODUCT_ID) != 0x50) || (readRegister(CAP1188_REG_MANUFACTURER_ID) != 0x5D) || (readRegister(CAP1188_REG_REVISION) != 0x83))
-        res = false;
-    else
+    if ((readRegister(CAP1188_REG_PRODUCT_ID) == 0x50) && (readRegister(CAP1188_REG_MANUFACTURER_ID) == 0x5D) && (readRegister(CAP1188_REG_REVISION) == 0x83))
         res = true;
+    else
+        res = false;
 
     return res;
 }
@@ -146,7 +150,7 @@ bool CAP1188::checkIntegrity()
  *
  * @return bool - True if the device is detected and the integrity is checked, otherwise false.
  */
-bool CAP1188::resetCAP1188()
+bool CAP1188::reset()
 {
     bool res = false;
 
@@ -159,9 +163,21 @@ bool CAP1188::resetCAP1188()
         delay(100);
         digitalWrite(_resetpin, LOW);
         delay(100);
+        setInt(); // Clear the interrupt bit
     }
 
     res = checkIntegrity();
+
+    writeRegister(CAP1188_REG_MULTIPLE_TOUCH_CONFIG, 0x00);    // allow multiple touches
+    writeRegister(CAP1188_REG_SENSOR_INPUT_LED_LINKING, 0x00); // Have LEDs follow touches
+    writeRegister(CAP1188_REG_STANDBY_CONFIGURATION, 0x30);    // speed up a bit
+    setSensitivity(CAP1188_SENS_VAL_128x);                     // Setting the sensitivity of the sensor
+    writeRegister(CAP1188_REG_SENSOR_INPUT_ENABLE, 0x07);      // Disable unwanted inputs
+    writeRegister(CAP1188_REG_INTERRUPT_ENABLE, 0x07);         // Enable first 3 touch pad interrupts
+    writeRegister(CAP1188_REG_REPEAT_RATE_ENABLE, 0x00);       // Disable repeate rate for interrupt generation (interrupt only generated when the button state changes)
+    writeRegister(CAP1188_REG_STANDBY_CHANNEL, 0x07);          // Set stand by channel for 3 touch pads
+
+    setInt(); // Flipping the interrupt pin just in case
 
     return res;
 }
