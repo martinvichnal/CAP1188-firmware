@@ -2,8 +2,8 @@
  * @file CAP1188.cpp
  * @author Martin Vichnal
  * @brief CAP1188 Capacitive Touch Sensor Firmware using I2C communication method.
- * @version v1.1.1
- * @date 2024-05-22
+ * @version v1.1.2
+ * @date 2024-05-23
  *
  * @copyright Copyright (c) 2024
  *
@@ -31,7 +31,7 @@ bool CAP1188::begin()
 
     res = reset();
 
-    return res;
+    return (res);
 }
 
 /**
@@ -44,12 +44,10 @@ bool CAP1188::begin()
 uint8_t CAP1188::setSensitivity(uint8_t value)
 {
     uint8_t sensMask = 0x8F; // 10001111
-    uint8_t res = readRegister(CAP1188_REG_SENSITIVITY_CONTROL);
-    res &= sensMask;
-    res |= value;
-    writeRegister(CAP1188_REG_SENSITIVITY_CONTROL, res);
 
-    return (res = readRegister(CAP1188_REG_SENSITIVITY_CONTROL));
+    uint8_t res = setRegister(CAP1188_REG_SENSITIVITY_CONTROL, sensMask, value);
+
+    return (res);
 }
 
 /**
@@ -59,12 +57,11 @@ uint8_t CAP1188::setSensitivity(uint8_t value)
  */
 uint8_t CAP1188::getTouch()
 {
-    uint8_t t = readRegister(CAP1188_REG_SENSOR_INPUT_STATUS);
-    if (t)
-    {
-        writeRegister(CAP1188_REG_MAIN_CONTROL, readRegister(CAP1188_REG_MAIN_CONTROL) & ~CAP1188_REG_MAIN_INT);
-    }
-    return t;
+    uint8_t res = readRegister(CAP1188_REG_SENSOR_INPUT_STATUS);
+
+    clearInt();
+
+    return res;
 }
 
 /**
@@ -82,7 +79,7 @@ uint8_t CAP1188::readRegister(uint8_t reg)
     Wire.endTransmission();
     Wire.requestFrom(CAP1188_DEFAULT_ADDRESS, 1);
     res = Wire.read();
-    return res;
+    return (res);
 }
 
 /**
@@ -118,14 +115,12 @@ void CAP1188::writeRegister(uint8_t reg, uint8_t value)
 }
 
 /**
- * @brief Resets the interrupt bit
+ * @brief Resets/clears the interrupt bit
  *
- *
- * @param 0 on default (value The interrupt value to be set.)
  */
-void CAP1188::setInt(uint8_t value)
+void CAP1188::clearInt()
 {
-    writeRegister(CAP1188_REG_MAIN_CONTROL, value);
+    writeRegister(CAP1188_REG_MAIN_CONTROL, readRegister(CAP1188_REG_MAIN_CONTROL) & ~CAP1188_REG_MAIN_INT);
 }
 
 /**
@@ -142,7 +137,7 @@ bool CAP1188::checkIntegrity()
     else
         res = false;
 
-    return res;
+    return (res);
 }
 
 /**
@@ -163,7 +158,7 @@ bool CAP1188::reset()
         delay(100);
         digitalWrite(_resetpin, LOW);
         delay(100);
-        setInt(); // Clear the interrupt bit
+        clearInt(); // Clear the interrupt bit
     }
 
     res = checkIntegrity();
@@ -177,7 +172,7 @@ bool CAP1188::reset()
     writeRegister(CAP1188_REG_REPEAT_RATE_ENABLE, 0x00);       // Disable repeate rate for interrupt generation (interrupt only generated when the button state changes)
     writeRegister(CAP1188_REG_STANDBY_CHANNEL, 0x07);          // Set stand by channel for 3 touch pads
 
-    setInt(); // Flipping the interrupt pin just in case
+    clearInt(); // Flipping the interrupt pin just in case
 
-    return res;
+    return (res);
 }
